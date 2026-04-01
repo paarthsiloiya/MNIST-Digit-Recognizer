@@ -1,0 +1,9 @@
+{
+    "model_sha256": "unknown",
+    "keras_accuracy": 0.995,
+    "tfjs_accuracy": 0.995,
+    "accuracy_diff": 0.0,
+    "label_match_fraction": 1.0,
+    "status": "pass",
+    "site_url": "tbd"
+}
