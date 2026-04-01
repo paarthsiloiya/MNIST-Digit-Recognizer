@@ -1,11 +1,11 @@
 # MNIST Digit Recognizer - Static Web UI
 
 This project hosts a static, in-browser MNIST digit recognizer using [TensorFlow.js](https://www.tensorflow.org/js). 
-The core capability is driven by an original Keras model (`Digit_Recognizer.keras`), which has been converted for web inference.
+The core capability is driven by an original Keras model (`Digit_Recognizer.keras`), which has been converted for web inference into a Tensor JS GraphModel.
 
 ## Features
-- **In-browser Inference**: No backend required. Models run purely in your local browser environment.
-- **Conversion Pipeline**: Automated conversion from offline Keras `.keras` bundle to TFJS layered `.json` layout.
+- **In-browser Inference**: No backend required. Models run purely in your local browser environment using `tf.loadGraphModel()`.
+- **Conversion Pipeline**: Automated conversion from offline Keras (`.keras`) file formats, wrapping an intermediate `SavedModel` extraction to parse correctly into `JSON` Graph structures for `@tensorflow/tfjs`.
 - **Draw Canvas**: Clean integrated canvas drawing tool with automatic grayscale resizing and thresholding matching the offline preprocessing pipeline.
 - **Automated Deployment**: GitHub Actions pipeline is pre-configured to build, convert, and host via GitHub Pages.
 
@@ -22,7 +22,9 @@ The core capability is driven by an original Keras model (`Digit_Recognizer.kera
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
-   npm install  # (ensure Node.js ^18 is used to build tfjs-node evaluating dependencies if running locally)
+   
+   # For Windows users: if you face issues with full tensorflowjs wheels (e.g. jax / orbax missing), 
+   # use the isolated python script (`python scripts/convert_model.py`) to bypass unsupported dependencies using python Mocks natively!
    ```
 
 3. Convert the offline model:

@@ -1,6 +1,13 @@
 import sys
 import argparse
 import os
+from unittest.mock import MagicMock
+sys.modules['tensorflow_decision_forests'] = MagicMock()
+sys.modules['jax'] = MagicMock()
+sys.modules['jax.experimental'] = MagicMock()
+sys.modules['jax.experimental.jax2tf'] = MagicMock()
+sys.modules['flax'] = MagicMock()
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
@@ -11,9 +18,16 @@ def convert_model(input_path, output_dir):
         print(f"Loading Keras model from {input_path}...")
         model = tf.keras.models.load_model(input_path)
         
+        # Save it as a TF SavedModel temporarily
+        temp_saved_model_dir = "temp_saved_model"
+        tf.saved_model.save(model, temp_saved_model_dir)
+        print("Exported to SavedModel format temporarily.")
+
         os.makedirs(output_dir, exist_ok=True)
-        print(f"Converting to tfjs format in {output_dir}...")
-        tfjs.converters.save_keras_model(model, output_dir)
+        print(f"Converting to tfjs graph model in {output_dir}...")
+        
+        # Use convert_tf_saved_model instead of save_keras_model
+        tfjs.converters.convert_tf_saved_model(temp_saved_model_dir, output_dir)
         
         print("Conversion successful.")
     except Exception as e:

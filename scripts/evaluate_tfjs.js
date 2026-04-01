@@ -34,7 +34,7 @@ async function evaluate() {
     }
     
     console.log(`Loading TFJS model from ${modelPath}...`);
-    const model = await tf.loadLayersModel(modelPath);
+    const model = await tf.loadGraphModel(modelPath);
 
     console.log(`Evaluating predictions in batches...`);
     const flatData = [].concat(...images); // 784 * n

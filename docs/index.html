@@ -1,37 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MNIST Digit Recognizer</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-</head>
-<body>
-    <div class="container">
-        <div class="title-container">
-            <h1>Digit Recognizer</h1>
-            <p>Draw a digit (0-9) below and see the model's prediction.</p>
-        </div>
-        
-        <div class="main-content">
-            <div class="canvas-container">
-                <canvas id="drawingCanvas" width="280" height="280"></canvas>
-                <div class="controls">
-                    <button id="clearBtn">Clear</button>
-                    <button id="predictBtn">Predict</button>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MNIST Digit Recognizer</title>
+        <link rel="stylesheet" href="style.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="title-container">
+                <h1>Digit Recognizer</h1>
+                <p>Draw a digit (0-9) below and see the model's prediction.</p>
+            </div>
+
+            <div class="main-content">
+                <div class="canvas-container">
+                    <canvas id="drawingCanvas" width="280" height="280"></canvas>
+                    <div class="controls">
+                        <button id="clearBtn">Clear</button>
+                        <button id="predictBtn">Predict</button>
+                    </div>
+                </div>
+
+                <div class="results-container">
+                    <h2>Prediction: <span id="predictionResult">-</span></h2>
+                    <div id="confidenceBars" class="confidence-bars">
+                        <!-- Bars will be generated here by JS -->
+                    </div>
                 </div>
             </div>
-            
-            <div class="results-container">
-                <h2>Prediction: <span id="predictionResult">-</span></h2>
-                <div id="confidenceBars" class="confidence-bars">
-                    <!-- Bars will be generated here by JS -->
-                </div>
-            </div>
         </div>
-    </div>
-    
-    <script src="app.js"></script>
-</body>
+
+        <script src="app.js"></script>
+    </body>
 </html>

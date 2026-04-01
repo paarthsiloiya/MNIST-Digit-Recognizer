@@ -1,1 +1,1 @@
-{ "name": "mnist-tfjs", "dependencies": { "@tensorflow/tfjs-node": "^4.17.0" } }
+{ "name": "mnist-tfjs", "dependencies": { "puppeteer": "^22.0.0" } }

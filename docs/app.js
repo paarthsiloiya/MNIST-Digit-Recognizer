@@ -27,13 +27,13 @@ window.onload = async () => {
     initBars();
 
     try {
-        console.log("Loading model from /model/model.json...");
-        tfModel = await tf.loadLayersModel('./model/model.json');
+        console.log("Loading model from ./model/model.json...");
+        tfModel = await tf.loadGraphModel('./model/model.json');
         console.log("Model loaded!");
         document.getElementById('predictionResult').innerText = "Ready";
     } catch (e) {
         console.error("Error loading model", e);
-        document.getElementById('predictionResult').innerText = "Model Load Failed";
+        document.getElementById('predictionResult').innerText = "Failed: " + e.message;
     }
 };
 

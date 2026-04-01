@@ -1,0 +1,10 @@
+.venv/
+node_modules/
+__pycache__/
+pip_log.txt
+convert_log.txt
+reports/
+scripts/keras_results.json
+scripts/tfjs_results.json
+scripts/test_samples.json
+docs/model/
