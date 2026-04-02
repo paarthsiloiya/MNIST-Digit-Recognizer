@@ -1,3 +1,4 @@
+keras>=3.4.1
 tensorflow
 tensorflowjs
 numpy

@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -30,14 +31,24 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies
+      - name: Install Base TF for Export
         run: |
-          pip install -r requirements.txt
+          pip install "tensorflow>=2.16.1" "keras>=3.0.0" numpy Pillow
       
+      - name: Prep Model
+        run: |
+          python scripts/export_saved_model.py --input Digit_Recognizer.keras --output temp_saved_model
+
+      - name: Install TFJS
+        run: |
+          pip install tensorflowjs
+          pip install --upgrade protobuf
+
       - name: Convert Model to TFJS
         run: |
           mkdir -p docs/model
-          python scripts/convert_model.py --input Digit_Recognizer.keras --output docs/model
+          tensorflowjs_converter --input_format=tf_saved_model --output_format=tfjs_graph_model --signature_name=serving_default --saved_model_tags=serve temp_saved_model docs/model
+
 
       - name: Verify Model Exists
         run: |
