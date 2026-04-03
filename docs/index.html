@@ -1,36 +1,103 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>MNIST Digit Recognizer</title>
         <link rel="stylesheet" href="style.css" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/@phosphor-icons/web"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+        <style type="text/tailwindcss">
+            @layer utilities {
+                .rendering-pixelated {
+                    image-rendering: pixelated;
+                    image-rendering: -moz-crisp-edges;
+                    image-rendering: crisp-edges;
+                }
+            }
+        </style>
     </head>
-    <body>
-        <div class="container">
-            <div class="title-container">
-                <h1>Digit Recognizer</h1>
-                <p>Draw a digit (0-9) below and see the model's prediction.</p>
+    <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans selection:bg-indigo-100">
+        <!-- Header -->
+        <header class="py-4 px-6 mb-8 border-b border-slate-200 bg-white shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3 w-full max-w-5xl mx-auto">
+                <i class="ph ph-brain text-4xl text-indigo-600"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900">Digit Recognizer</h1>
+                    <p class="text-xs text-slate-500 font-medium">Draw a digit (0-9) to see predictions</p>
+                </div>
+                <div class="ml-auto flex items-center gap-4">
+                    <span id="modelStatus" class="flex items-center gap-2 text-sm font-medium px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full border border-yellow-200"> <i class="ph ph-spinner animate-spin"></i> Loading Model... </span>
+                    <a href="https://github.com/paarthsiloiya/MNIST-Digit-Recognizer" class="text-slate-400 hover:text-slate-800 transition-colors" aria-label="GitHub Repository" title="GitHub Repository">
+                        <i class="ph ph-github-logo text-3xl"></i>
+                    </a>
+                </div>
             </div>
+        </header>
 
-            <div class="main-content">
-                <div class="canvas-container">
-                    <canvas id="drawingCanvas" width="280" height="280"></canvas>
-                    <div class="controls">
-                        <button id="clearBtn">Clear</button>
-                        <button id="predictBtn">Predict</button>
+        <main class="flex-grow flex flex-col items-center justify-start px-4 w-full pb-10">
+            <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
+                <!-- Left panel: Canvas -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center group relative overflow-hidden h-full">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="w-full flex justify-between items-end mb-6 relative z-10">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><i class="ph ph-pencil-simple text-indigo-500"></i> Canvas</h2>
+                            <ul class="text-sm text-slate-500 mt-2 list-none space-y-1">
+                                <li class="flex items-center gap-2"><i class="ph ph-mouse-left text-lg"></i> Left-click to draw</li>
+                                <li class="flex items-center gap-2"><i class="ph ph-mouse-right text-lg"></i> Right-click to erase</li>
+                            </ul>
+                        </div>
+                        <button
+                            id="clearBtn"
+                            class="flex gap-2 items-center text-sm px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 focus:outline-none focus:ring-4 focus:ring-red-50 transition-all font-bold shadow-sm active:scale-95"
+                            aria-label="Clear canvas"
+                            title="Clear canvas (Hotkey: C)"
+                        >
+                            <i class="ph ph-trash text-lg"></i> Clear
+                        </button>
+                    </div>
+
+                    <div id="canvasWrapper" class="relative touch-none mx-auto w-full max-w-[420px] aspect-square rounded-2xl overflow-hidden shadow-inner ring-2 ring-slate-200 bg-slate-100 mt-2">
+                        <!-- The brush cursor overlay -->
+                        <div id="brushCursor" class="absolute pointer-events-none hidden bg-black mix-blend-difference rounded-full z-10 opacity-70 border-2 border-white" style="width: 30px; height: 30px; transform: translate(-50%, -50%)"></div>
+
+                        <canvas id="drawingCanvas" width="28" height="28" class="block bg-black cursor-none rendering-pixelated w-full h-full" style="touch-action: none" oncontextmenu="return false;"> </canvas>
                     </div>
                 </div>
 
-                <div class="results-container">
-                    <h2>Prediction: <span id="predictionResult">-</span></h2>
-                    <div id="confidenceBars" class="confidence-bars">
-                        <!-- Bars will be generated here by JS -->
+                <!-- Right panel: Predictions -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden h-full">
+                    <div class="w-full mb-6 relative z-10">
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4"><i class="ph ph-target text-indigo-500"></i> Top Prediction</h2>
+                    </div>
+
+                    <div class="flex items-center gap-6 mb-8 relative z-10">
+                        <div class="w-28 h-28 bg-gradient-to-br from-indigo-50 to-white rounded-2xl border border-indigo-100 flex items-center justify-center shadow-inner relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-indigo-600 opacity-0 group-hover:opacity-5 transition-opacity"></div>
+                            <span id="predictionResult" class="text-6xl font-light text-indigo-600 drop-shadow-sm">-</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Confidence</p>
+                            <p id="topConfidence" class="text-4xl font-semibold text-slate-800">--%</p>
+                            <p id="predictionHelpText" class="text-sm text-slate-400 mt-2">Draw digit to predict.</p>
+                        </div>
+                    </div>
+
+                    <div class="w-full relative z-10 mt-auto">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Probabilities</h3>
+                        <div id="confidenceGrid" class="grid grid-cols-5 gap-3 w-full">
+                            <!-- Cards generated by JS -->
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
+
+        <footer class="py-6 text-center text-xs text-slate-400">
+            <p>Uses TensorFlow.js and a locally-trained Keras model</p>
+        </footer>
 
         <script src="app.js"></script>
     </body>

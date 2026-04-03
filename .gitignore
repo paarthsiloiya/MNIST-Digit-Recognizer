@@ -8,3 +8,4 @@ scripts/keras_results.json
 scripts/tfjs_results.json
 scripts/test_samples.json
 docs/model/temp_saved_model/
+docs/model

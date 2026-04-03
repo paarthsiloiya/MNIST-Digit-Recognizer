@@ -1,15 +1,16 @@
-# MNIST Digit Recognizer - Static Web UI
+﻿# MNIST Digit Recognizer - Static Web UI
 
 This project hosts a static, in-browser MNIST digit recognizer using [TensorFlow.js](https://www.tensorflow.org/js). 
-The core capability is driven by an original Keras 3 model (`Digit_Recognizer.keras`), which has been converted for web inference into a Tensor JS GraphModel.
+The core capability is driven by an original Keras 3 model (Digit_Recognizer.keras), which has been converted for web inference into a Tensor JS GraphModel.
 
 **Live Demo:** [https://paarthsiloiya.github.io/MNIST-Digit-Recognizer/](https://paarthsiloiya.github.io/MNIST-Digit-Recognizer/)
 
 ## Features
-- **In-browser Inference**: No backend required. Models run purely in your local browser environment using `tf.loadGraphModel()`.
-- **Conversion Pipeline**: Automated conversion from offline Keras 3 (`.keras`) file formats. The workflow extracts an intermediate `SavedModel` to strip problematic parameters before converting to a `JSON` Graph structure via `tensorflowjs_converter`.
-- **Draw Canvas**: Clean integrated canvas drawing tool with automatic grayscale resizing and thresholding matching the offline preprocessing pipeline.
-- **Automated Deployment**: GitHub Actions pipeline is configured to build, convert, and host the web UI via GitHub Pages.
+- **Modern UI & UX**: Clean, modern light-themed interface built using Tailwind CSS via CDN and lightweight Phosphor Icons. Visually appealing active grid instead of traditional progress bars.
+- **In-browser Inference**: No backend required. Models run purely in your local browser environment using 	f.loadGraphModel().
+- **Auto-Predict & Smooth Interactions**: The site automatically runs inference as you draw (debounced) with immersive animated probability cards.
+- **Enhanced Canvas**: Prominent custom 28x28 logical sizing matching the MNIST dataset structure directly, upscaled massively using CSS pixelated rendering (420x420). Left-click to draw, right-click to erase, and press C to clear.
+- **Conversion Pipeline**: Automated conversion from offline Keras 3 (.keras) file formats, deployed via GitHub Actions.
 
 ## Setup & Local Usage
 
@@ -66,8 +67,6 @@ python scripts/compare_results.py --keras scripts/keras_results.json --tfjs scri
 
 ## Results & Acceptance Metrics
 
-- **Model format**: Verified inputs: `28x28`, grayscale, black background, preprocessed inside TF.js exactly matching the original Keras standard mapping of `pixel / 255.0`.
+- **Model format**: Verified inputs: 28x28, grayscale, black background, preprocessed inside TF.js exactly matching the original Keras standard mapping of pixel / 255.0.
 - **Target Accuracy**: ~99.5% on test batches.
 - **Parity**: Identical predictions between Python native Keras and TensorFlow.js (Diff <= 0.5% or Match rate >= 98%).
-
-Detailed reports are generated in `reports/verification_report.json`.
