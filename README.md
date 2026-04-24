@@ -65,6 +65,23 @@ node scripts/evaluate_tfjs.js --samples scripts/test_samples.json --output scrip
 python scripts/compare_results.py --keras scripts/keras_results.json --tfjs scripts/tfjs_results.json --report reports/verification_report.json
 ```
 
+## Explainability (Grad-CAM)
+
+To better understand how the convolutional neural network makes its predictions, a Jupyter notebook ([grad_cam_xai.ipynb](grad_cam_xai.ipynb)) is provided. This notebook generates Grad-CAM (Gradient-weighted Class Activation Mapping) visualizations for the pretrained model.
+
+- **Notebook**: `grad_cam_xai.ipynb` (self-contained, runs end-to-end)
+- **Output**: Combined original and heatmap visualizations are saved as PNG files in the `reports/gradcam/` directory.
+
+To run the explainability notebook:
+
+```bash
+# Ensure dependencies are installed
+pip install tensorflow numpy matplotlib opencv-python jupyter
+
+# Launch the notebook locally
+jupyter notebook grad_cam_xai.ipynb
+```
+
 ## Results & Acceptance Metrics
 
 - **Model format**: Verified inputs: 28x28, grayscale, black background, preprocessed inside TF.js exactly matching the original Keras standard mapping of pixel / 255.0.
