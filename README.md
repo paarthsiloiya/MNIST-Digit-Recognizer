@@ -87,3 +87,15 @@ jupyter notebook grad_cam_xai.ipynb
 - **Model format**: Verified inputs: 28x28, grayscale, black background, preprocessed inside TF.js exactly matching the original Keras standard mapping of pixel / 255.0.
 - **Target Accuracy**: ~99.5% on test batches.
 - **Parity**: Identical predictions between Python native Keras and TensorFlow.js (Diff <= 0.5% or Match rate >= 98%).
+## Interactive Web Visualizer
+
+This project features a step-by-step layer visualization right in your browser, revealing exactly how the CNN processes your hand-drawn digit.
+
+### How to use:
+1. Start the local server (`python -m http.server --directory docs 8000`) and open `http://localhost:8000`.
+2. Draw a digit clearly on the black canvas on the left. The prediction updates in real-time.
+3. Scroll down below the prediction panel to the **Code/Node Visualizer**.
+4. Use the **Prev Layer** and **Next Layer** buttons to step backwards and forwards through the 9 intermediate stages of the model:
+   - **Conv2D Blocks 1-3:** View the actual 2D feature maps (filters) extracted at each stage.
+   - **Dense Layers:** View the 1D array of individual node activations leading up to the final softmax classification.
+5. **Inspect the Nodes:** Hover over individual feature maps or dense node squares to reveal their exact values, index positions, and (for Conv2D maps) a crisp, scaled-up view of what the model "sees" at that exact layer!

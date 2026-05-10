@@ -268,3 +268,171 @@ async function predictDigit() {
     inputTensor.dispose();
     predsTensor.dispose();
 }
+
+// --- STBX: Interactive Visualization ---
+let vizLayersOutputs = [];
+let currentVizLayer = 0;
+
+const layerConfig = [
+    { name: 'Conv2D Block 1-A', desc: '32 filters (3x3), extracts simple features.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_1/batchnorm/add_1' },
+    { name: 'Conv2D Block 1-B', desc: '32 filters (3x3), refines simple features.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_1_2/batchnorm/add_1' },
+    { name: 'Conv2D Block 2-A', desc: '64 filters (3x3), extracts more complex patterns.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_2_1/batchnorm/add_1' },
+    { name: 'Conv2D Block 2-B', desc: '64 filters (3x3), further refines patterns.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_3_1/batchnorm/add_1' },
+    { name: 'Conv2D Block 3-A', desc: '128 filters (3x3), captures high-level components.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_4_1/batchnorm/add_1' },
+    { name: 'Conv2D Block 3-B', desc: '128 filters (3x3), highly abstracted features.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_5_1/batchnorm/add_1' },
+    { name: 'Dense 1 (256)', desc: 'First fully connected layer extracting high-level features.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_6_1/batchnorm/add_1' },
+    { name: 'Dense 2 (128)', desc: 'Second fully connected layer refining features.', node: 'StatefulPartitionedCall/functional_1/batch_normalization_7_1/batchnorm/add_1' },
+    { name: 'Output Layer', desc: 'Final probabilities for each digit (0-9).', node: 'Identity' }
+];
+
+async function runVisualizationPrediction(inputTensor) {
+    if (!tfModel) return;
+    const queryNodes = layerConfig.map(l => l.node);
+    try {
+        const intermediateOutputs = await tfModel.executeAsync(inputTensor, queryNodes);
+        vizLayersOutputs = await Promise.all(intermediateOutputs.map(async (t) => {
+            const data = await t.data();
+            return { shape: t.shape, data: Array.from(data) };
+        }));
+        currentVizLayer = 0;
+        renderVizLayer();
+        document.getElementById('vizContainer').classList.remove('hidden');
+    } catch(e) {
+        console.warn('Could not extract intermediate layers:', e);
+    }
+}
+
+function renderVizLayer() {
+    if(!vizLayersOutputs.length) return;
+    const layer = layerConfig[currentVizLayer];
+    const layerData = vizLayersOutputs[currentVizLayer];
+    document.getElementById('vizLayerName').innerText = layer.name;
+    document.getElementById('vizLayerDesc').innerText = layer.desc;
+    
+    const grid = document.getElementById('vizNodesGrid');
+    grid.innerHTML = '';
+    
+    document.getElementById('vizNodesGrid').className = 'flex flex-wrap gap-2 max-h-64 overflow-y-auto w-full p-4 bg-white rounded-xl border border-slate-100 shadow-inner';
+
+    if (layerData.shape.length === 4) {
+        // Conv2D output: [batch, height, width, channels]
+        const [batch, h, w, channels] = layerData.shape;
+        
+        document.getElementById('vizHeaderInfo').innerText = `Filters: ${channels} (${w}x${h})`;
+        
+        for (let c = 0; c < channels; c++) {
+            const div = document.createElement('div');
+            div.className = 'w-14 h-14 flex flex-col items-center justify-center border-2 border-slate-100 rounded relative cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all overflow-hidden bg-slate-50';
+            
+            const vCanvas = document.createElement('canvas');
+            vCanvas.width = w;
+            vCanvas.height = h;
+            vCanvas.className = 'w-full h-full rendering-pixelated block';
+            const ctx = vCanvas.getContext('2d');
+            const imgData = ctx.createImageData(w, h);
+            
+            let maxVal = -Infinity;
+            let minVal = Infinity;
+            
+            for(let i=0; i<h; i++) {
+                for(let j=0; j<w; j++) {
+                    const idx = i * (w * channels) + j * channels + c;
+                    const val = layerData.data[idx];
+                    if(val > maxVal) maxVal = val;
+                    if(val < minVal) minVal = val;
+                }
+            }
+            const range = maxVal - minVal || 1;
+            
+            for(let i=0; i<h; i++) {
+                for(let j=0; j<w; j++) {
+                    const idx = i * (w * channels) + j * channels + c;
+                    const val = layerData.data[idx];
+                    
+                    const norm = (val - minVal) / range;
+                    const color = Math.floor(norm * 255);
+                    const pixelIdx = (i * w + j) * 4;
+                    imgData.data[pixelIdx] = color;
+                    imgData.data[pixelIdx+1] = color;
+                    imgData.data[pixelIdx+2] = color;
+                    imgData.data[pixelIdx+3] = 255;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            div.appendChild(vCanvas);
+            
+            div.addEventListener('mouseenter', (e) => {
+                const tt = document.getElementById('globalTooltip');
+                const dataUrl = vCanvas.toDataURL();
+                tt.innerHTML = `<div class='font-bold mb-1 text-center'>Filter ${c}</div>
+                                <div class='flex justify-center mb-2'>
+                                    <img src="${dataUrl}" class="w-32 h-32 rendering-pixelated border border-slate-600 rounded" />
+                                </div>
+                                <div class='opacity-80 text-center'>Shape: ${w}x${h}</div>
+                                <div class='opacity-80 text-center'>Max Act: ${maxVal.toFixed(3)}</div>`;
+                tt.classList.remove('hidden');
+                
+                const rect = div.getBoundingClientRect();
+                tt.style.left = (rect.left + rect.width / 2) + 'px';
+                tt.style.top = (rect.top - 8) + 'px';
+            });
+            div.addEventListener('mouseleave', () => {
+                document.getElementById('globalTooltip').classList.add('hidden');
+            });
+            
+            grid.appendChild(div);
+        }
+    } else {
+        // Dense
+        const displayData = layerData.data.slice(0, 100);
+        const totalNodes = layerData.data.length;
+        
+        document.getElementById('vizHeaderInfo').innerText = `Nodes showing: ${displayData.length} (of ${totalNodes})`;
+
+        displayData.forEach((val, idx) => {
+            const div = document.createElement('div');
+            div.className = 'w-10 h-10 flex flex-col items-center justify-center border border-indigo-100 rounded text-[10px] relative group cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors';
+            const intensity = Math.min(1, Math.max(0, val));
+            div.style.backgroundColor = `rgba(79, 70, 229, ${intensity * 0.4})`;
+            const vText = document.createElement('span');
+            vText.innerText = val.toFixed(2);
+            vText.className = 'select-none pointer-events-none truncate w-full text-center px-1 font-semibold text-slate-700';
+            
+            div.appendChild(vText);
+            
+            div.addEventListener('mouseenter', (e) => {
+                const tt = document.getElementById('globalTooltip');
+                tt.innerHTML = `<div class='font-bold text-center'>Node ${idx}</div><hr class='border-slate-600 my-1'/><div class='text-center'>Value: ${val.toFixed(4)}</div>`;
+                tt.classList.remove('hidden');
+                
+                const rect = div.getBoundingClientRect();
+                tt.style.left = (rect.left + rect.width / 2) + 'px';
+                tt.style.top = (rect.top - 8) + 'px';
+            });
+            div.addEventListener('mouseleave', () => {
+                document.getElementById('globalTooltip').classList.add('hidden');
+            });
+            
+            grid.appendChild(div);
+        });
+    }
+
+    document.getElementById('vizBtnPrev').disabled = currentVizLayer === 0;
+    document.getElementById('vizBtnNext').disabled = currentVizLayer === vizLayersOutputs.length - 1;
+}
+
+window.vizPrev = () => { if(currentVizLayer > 0) { currentVizLayer--; renderVizLayer(); } };
+window.vizNext = () => { if(currentVizLayer < vizLayersOutputs.length - 1) { currentVizLayer++; renderVizLayer(); } };
+
+const oldPredict = predictDigit;
+predictDigit = async function() {
+    await oldPredict();
+    let inputTensor = tf.browser.fromPixels(canvas, 1).toFloat().div(tf.scalar(255)).expandDims(0);
+    const sum = inputTensor.sum().dataSync()[0];
+    if(sum >= 5) {
+        await runVisualizationPrediction(inputTensor);
+    } else {
+        document.getElementById('vizContainer').classList.add('hidden');
+    }
+    inputTensor.dispose();
+};
