@@ -102,6 +102,7 @@
             <p class="text-sm text-slate-500 mt-1">Step through the prediction layers to see how the model computes the final output</p>
         </div>
         <div class="flex items-center gap-4">
+            <button id="vizModeToggle" onclick="toggleVizMode()" class="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded text-sm hover:bg-slate-50"><i class="ph ph-swap"></i> Toggle Interactive Mode</button>
             <button id="vizBtnPrev" onclick="vizPrev()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 disabled:opacity-50"><i class="ph ph-caret-left"></i> Prev Layer</button>
             <button id="vizBtnNext" onclick="vizNext()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">Next Layer <i class="ph ph-caret-right"></i></button>
         </div>
@@ -113,6 +114,24 @@
             <span id="vizHeaderInfo" class="text-xs font-semibold text-slate-400 uppercase">Nodes Configuration</span>
             <span class="text-xs font-semibold text-slate-400 uppercase">Hover to inspect value</span>
         </div>
+        
+        <div id="vizInteractiveContainer" class="hidden flex flex-col items-center p-4 bg-white rounded-xl border border-slate-100 shadow-inner w-full">
+            <div class="flex justify-between w-full mb-4 px-4 items-center">
+                <button onclick="intPrevFilter()" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-sm"><i class="ph ph-caret-left"></i> Prev Filter</button>
+                <div class="text-center">
+                    <span id="intFilterLabel" class="font-bold text-slate-700 block">Filter 0</span>
+                    <span id="intShapeLabel" class="text-xs text-slate-500">Shape: 28x28</span>
+                </div>
+                <button onclick="intNextFilter()" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-sm">Next Filter <i class="ph ph-caret-right"></i></button>
+            </div>
+            
+            <div id="intCanvasWrapper" class="relative inline-block border-2 border-slate-200 bg-slate-50 cursor-crosshair shadow-md group" style="width: 336px; height: 336px;">
+                <canvas id="intCanvas" width="28" height="28" class="w-full h-full rendering-pixelated"></canvas>
+                <div id="intHighlight" class="absolute bg-white mix-blend-difference pointer-events-none hidden z-10 transition-all duration-75" style="box-shadow: 0 0 0 2px red inset;"></div>
+            </div>
+            <p class="text-xs text-slate-400 mt-4"><i class="ph ph-info"></i> Hover over pixels to inspect receptive field mappings</p>
+        </div>
+
         <div id="vizNodesGrid" class="flex flex-wrap gap-1 max-h-64 overflow-y-auto w-full p-2 bg-white rounded-xl border border-slate-100 shadow-inner">
             <!-- Nodes -->
         </div>

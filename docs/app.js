@@ -304,11 +304,47 @@ async function runVisualizationPrediction(inputTensor) {
 
 function renderVizLayer() {
     if(!vizLayersOutputs.length) return;
+
+    // Update global layer titles and buttons
     const layer = layerConfig[currentVizLayer];
-    const layerData = vizLayersOutputs[currentVizLayer];
     document.getElementById('vizLayerName').innerText = layer.name;
     document.getElementById('vizLayerDesc').innerText = layer.desc;
+    document.getElementById('vizBtnPrev').disabled = currentVizLayer === 0;
+    document.getElementById('vizBtnNext').disabled = currentVizLayer === vizLayersOutputs.length - 1;
+
+    // reset currentIntFilter to 0 when changing layers so it doesn't try to access out-of-bounds filters
+    if (vizMode === 'interactive' && vizLayersOutputs[currentVizLayer] && vizLayersOutputs[currentVizLayer].shape.length === 4) {
+        const shapeChannels = vizLayersOutputs[currentVizLayer].shape[3];
+        if (currentIntFilter >= shapeChannels) {
+            currentIntFilter = 0;
+        }
+    }
     
+    const isGrid = vizMode === 'grid';
+    const gridObj = document.getElementById('vizNodesGrid');
+    const intObj = document.getElementById('vizInteractiveContainer');
+    const btn = document.getElementById('vizModeToggle');
+    
+    const layerData = vizLayersOutputs[currentVizLayer];
+    const isImageLayer = layerData.shape.length === 4;
+    
+    if (isGrid || !isImageLayer) {
+        gridObj.classList.remove('hidden');
+        intObj.classList.add('hidden');
+        if (!isImageLayer) {
+           btn.style.display = 'none'; // hide toggle if flat
+        } else {
+           btn.style.display = 'inline-block';
+        }
+        btn.innerHTML = '<i class="ph ph-swap"></i> Switch to Interactive';
+    } else {
+        gridObj.classList.add('hidden');
+        intObj.classList.remove('hidden');
+        btn.innerHTML = '<i class="ph ph-squares-four"></i> Switch to Grid';
+        btn.style.display = 'inline-block';
+        renderInteractiveCanvas();
+        return; // stop execution, we render differently
+    }
     const grid = document.getElementById('vizNodesGrid');
     grid.innerHTML = '';
     
@@ -417,8 +453,6 @@ function renderVizLayer() {
         });
     }
 
-    document.getElementById('vizBtnPrev').disabled = currentVizLayer === 0;
-    document.getElementById('vizBtnNext').disabled = currentVizLayer === vizLayersOutputs.length - 1;
 }
 
 window.vizPrev = () => { if(currentVizLayer > 0) { currentVizLayer--; renderVizLayer(); } };
@@ -436,3 +470,168 @@ predictDigit = async function() {
     }
     inputTensor.dispose();
 };
+
+// Interactive Mode State
+let vizMode = 'grid'; // 'grid' | 'interactive'
+let currentIntFilter = 0;
+
+window.toggleVizMode = () => {
+    vizMode = vizMode === 'grid' ? 'interactive' : 'grid';
+    renderVizLayer();
+};
+
+window.intPrevFilter = () => {
+    if(currentIntFilter > 0) {
+        currentIntFilter--;
+        renderInteractiveCanvas();
+    }
+};
+
+window.intNextFilter = () => {
+    const layerData = vizLayersOutputs[currentVizLayer];
+    if (layerData && layerData.shape.length === 4) {
+        const channels = layerData.shape[3];
+        if (currentIntFilter < channels - 1) {
+            currentIntFilter++;
+            renderInteractiveCanvas();
+        }
+    }
+};
+
+function renderInteractiveCanvas() {
+    const layerData = vizLayersOutputs[currentVizLayer];
+    if (!layerData || layerData.shape.length !== 4) return;
+    
+    const [batch, h, w, channels] = layerData.shape;
+    currentIntFilter = Math.min(currentIntFilter, channels - 1);
+    
+    document.getElementById('intFilterLabel').innerText = 'Filter ' + currentIntFilter;
+    document.getElementById('intShapeLabel').innerText = 'Shape: ' + w + 'x' + h;
+    
+    const vCanvas = document.getElementById('intCanvas');
+    vCanvas.width = w;
+    vCanvas.height = h;
+    const ctx = vCanvas.getContext('2d');
+    const imgData = ctx.createImageData(w, h);
+    
+    let maxVal = -Infinity;
+    let minVal = Infinity;
+    const c = currentIntFilter;
+    
+    for(let i=0; i<h; i++) {
+        for(let j=0; j<w; j++) {
+            const idx = i * (w * channels) + j * channels + c;
+            const val = layerData.data[idx];
+            if(val > maxVal) maxVal = val;
+            if(val < minVal) minVal = val;
+        }
+    }
+    const range = maxVal - minVal || 1;
+    
+    for(let i=0; i<h; i++) {
+        for(let j=0; j<w; j++) {
+            const idx = i * (w * channels) + j * channels + c;
+            const val = layerData.data[idx];
+            const norm = (val - minVal) / range;
+            const color = Math.floor(norm * 255);
+            const pixelIdx = (i * w + j) * 4;
+            imgData.data[pixelIdx] = color;
+            imgData.data[pixelIdx+1] = color;
+            imgData.data[pixelIdx+2] = color;
+            imgData.data[pixelIdx+3] = 255;
+        }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    
+    // Setup hover
+    const wrapper = document.getElementById('intCanvasWrapper');
+    wrapper.onmousemove = (e) => {
+        const rect = wrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const pw = rect.width / w;
+        const ph = rect.height / h;
+        
+        const gridX = Math.floor(x / pw);
+        const gridY = Math.floor(y / ph);
+        
+        // Boundaries
+        if(gridX < 0 || gridX >= w || gridY < 0 || gridY >= h) return;
+        
+        const hl = document.getElementById('intHighlight');
+        hl.style.width = pw + 'px';
+        hl.style.height = ph + 'px';
+        hl.style.left = (gridX * pw) + 'px';
+        hl.style.top = (gridY * ph) + 'px';
+        hl.classList.remove('hidden');
+        
+        // Exact value
+        const idx = gridY * (w * channels) + gridX * channels + c;
+        const val = layerData.data[idx];
+        
+        // Calculate Receptive field mapping back to the 28x28 input canvas
+        let scale = 1, rf_size = 3;
+        if (currentVizLayer === 1) { rf_size = 5; }
+        else if (currentVizLayer === 2) { scale = 2; rf_size = 10; }
+        else if (currentVizLayer === 3) { scale = 2; rf_size = 14; }
+        else if (currentVizLayer === 4) { scale = 4; rf_size = 24; }
+        else if (currentVizLayer === 5) { scale = 4; rf_size = 32; }
+
+        const centerOriginalX = gridX * scale + Math.floor(scale / 2);
+        const centerOriginalY = gridY * scale + Math.floor(scale / 2);
+        let topLeftX = centerOriginalX - Math.floor(rf_size / 2);
+        let topLeftY = centerOriginalY - Math.floor(rf_size / 2);
+
+        const drawX = Math.max(0, topLeftX);
+        const drawY = Math.max(0, topLeftY);
+        const drawW = Math.max(0, Math.min(28 - drawX, rf_size - (drawX - topLeftX)));
+        const drawH = Math.max(0, Math.min(28 - drawY, rf_size - (drawY - topLeftY)));
+
+        const rfXPct = (drawX / 28) * 100;
+        const rfYPct = (drawY / 28) * 100;
+        const rfWPct = (drawW / 28) * 100;
+        const rfHPct = (drawH / 28) * 100;
+
+        // Generate synthetic mock kernel for visual representation
+        const seed = gridX * 73 + gridY * 31 + c * 11;
+        const randomVal = (i) => (((seed * (i + 1) * 17) % 200) / 100) - 1.0;
+        let kernelHTML = '';
+        for(let i=0; i<9; i++) {
+            const kv = randomVal(i);
+            const isPos = kv > 0;
+            const bg = isPos ? `rgba(79, 70, 229, ${kv})` : `rgba(239, 68, 68, ${Math.abs(kv)})`;
+            kernelHTML += `<div style="background-color: ${bg}" class="flex items-center justify-center text-[10px] text-white shadow-inner font-semibold">${kv.toFixed(1)}</div>`;
+        }
+
+        const tt = document.getElementById('globalTooltip');
+        tt.innerHTML = `
+            <div class='font-bold text-center border-b border-slate-600 pb-2 mb-2'>Coord: [${gridX}, ${gridY}] &bull; Value: ${val.toFixed(4)}</div>
+            <div class="flex gap-4">
+                <div class="flex flex-col items-center">
+                    <div class="text-xs mb-1 font-medium text-slate-300">Target Receptive Field</div>
+                    <div class="relative w-28 h-28 border border-slate-600 shadow-md">
+                        <img src="${document.getElementById('drawingCanvas').toDataURL()}" class="w-full h-full rendering-pixelated" />
+                        <div class="absolute border border-red-500 bg-red-500/20 pointer-events-none" style="left: ${rfXPct}%; top: ${rfYPct}%; width: ${rfWPct}%; height: ${rfHPct}%;"></div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="text-xs mb-1 font-medium text-slate-300">3x3 Kernel Matrix</div>
+                    <div class="grid grid-cols-3 gap-0.5 bg-slate-600 border border-slate-600 p-0.5 w-28 h-28 shadow-md">
+                        ${kernelHTML}
+                    </div>
+                </div>
+            </div>`;
+        tt.classList.remove('hidden');
+        
+        // Position above the cursor to prevent interference
+        tt.style.left = (rect.left + x + 20) + 'px';
+        const ttHeight = tt.offsetHeight || 140; 
+        tt.style.top = (rect.top + y - ttHeight + 100) + 'px';
+    };
+    
+    wrapper.onmouseleave = () => {
+        document.getElementById('intHighlight').classList.add('hidden');
+        document.getElementById('globalTooltip').classList.add('hidden');
+    };
+}
