@@ -416,6 +416,13 @@ function renderVizLayer() {
                 document.getElementById('globalTooltip').classList.add('hidden');
             });
             
+            div.addEventListener('click', () => {
+                currentIntFilter = c;
+                vizMode = 'interactive';
+                document.getElementById('globalTooltip').classList.add('hidden');
+                renderVizLayer();
+            });
+            
             grid.appendChild(div);
         }
     } else {
@@ -546,7 +553,7 @@ function renderInteractiveCanvas() {
     // Setup hover
     const wrapper = document.getElementById('intCanvasWrapper');
     wrapper.onmousemove = (e) => {
-        const rect = wrapper.getBoundingClientRect();
+        const rect = vCanvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         

@@ -93,60 +93,59 @@
                     </div>
                 </div>
             </div>
-        
-<!-- Interactive Visualization Panel -->
-<div id="vizContainer" class="hidden mt-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col w-full max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><i class="ph ph-magnifying-glass text-indigo-500"></i> Code/Node Visualizer</h2>
-            <p class="text-sm text-slate-500 mt-1">Step through the prediction layers to see how the model computes the final output</p>
-        </div>
-        <div class="flex items-center gap-4">
-            <button id="vizModeToggle" onclick="toggleVizMode()" class="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded text-sm hover:bg-slate-50"><i class="ph ph-swap"></i> Toggle Interactive Mode</button>
-            <button id="vizBtnPrev" onclick="vizPrev()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 disabled:opacity-50"><i class="ph ph-caret-left"></i> Prev Layer</button>
-            <button id="vizBtnNext" onclick="vizNext()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">Next Layer <i class="ph ph-caret-right"></i></button>
-        </div>
-    </div>
-    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-        <h3 id="vizLayerName" class="text-lg font-bold text-indigo-800">Layer Name</h3>
-        <p id="vizLayerDesc" class="text-sm text-slate-600 mb-4 pb-4 border-b border-indigo-100/50">Layer Description</p>
-        <div class="flex justify-between items-start mb-2">
-            <span id="vizHeaderInfo" class="text-xs font-semibold text-slate-400 uppercase">Nodes Configuration</span>
-            <span class="text-xs font-semibold text-slate-400 uppercase">Hover to inspect value</span>
-        </div>
-        
-        <div id="vizInteractiveContainer" class="hidden flex flex-col items-center p-4 bg-white rounded-xl border border-slate-100 shadow-inner w-full">
-            <div class="flex justify-between w-full mb-4 px-4 items-center">
-                <button onclick="intPrevFilter()" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-sm"><i class="ph ph-caret-left"></i> Prev Filter</button>
-                <div class="text-center">
-                    <span id="intFilterLabel" class="font-bold text-slate-700 block">Filter 0</span>
-                    <span id="intShapeLabel" class="text-xs text-slate-500">Shape: 28x28</span>
-                </div>
-                <button onclick="intNextFilter()" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-sm">Next Filter <i class="ph ph-caret-right"></i></button>
-            </div>
-            
-            <div id="intCanvasWrapper" class="relative inline-block border-2 border-slate-200 bg-slate-50 cursor-crosshair shadow-md group" style="width: 336px; height: 336px;">
-                <canvas id="intCanvas" width="28" height="28" class="w-full h-full rendering-pixelated"></canvas>
-                <div id="intHighlight" class="absolute bg-white mix-blend-difference pointer-events-none hidden z-10 transition-all duration-75" style="box-shadow: 0 0 0 2px red inset;"></div>
-            </div>
-            <p class="text-xs text-slate-400 mt-4"><i class="ph ph-info"></i> Hover over pixels to inspect receptive field mappings</p>
-        </div>
 
-        <div id="vizNodesGrid" class="flex flex-wrap gap-1 max-h-64 overflow-y-auto w-full p-2 bg-white rounded-xl border border-slate-100 shadow-inner">
-            <!-- Nodes -->
-        </div>
-    </div>
-</div>
-</main>
+            <!-- Interactive Visualization Panel -->
+            <div id="vizContainer" class="hidden mt-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col w-full max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><i class="ph ph-magnifying-glass text-indigo-500"></i> Code/Node Visualizer</h2>
+                        <p class="text-sm text-slate-500 mt-1">Step through the prediction layers to see how the model computes the final output</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button id="vizModeToggle" onclick="toggleVizMode()" class="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded text-sm hover:bg-slate-50"><i class="ph ph-swap"></i> Toggle Interactive Mode</button>
+                        <button id="vizBtnPrev" onclick="vizPrev()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 disabled:opacity-50"><i class="ph ph-caret-left"></i> Prev Layer</button>
+                        <button id="vizBtnNext" onclick="vizNext()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">Next Layer <i class="ph ph-caret-right"></i></button>
+                    </div>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                    <h3 id="vizLayerName" class="text-lg font-bold text-indigo-800">Layer Name</h3>
+                    <p id="vizLayerDesc" class="text-sm text-slate-600 mb-4 pb-4 border-b border-indigo-100/50">Layer Description</p>
+                    <div class="flex justify-between items-start mb-2">
+                        <span id="vizHeaderInfo" class="text-xs font-semibold text-slate-400 uppercase">Nodes Configuration</span>
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Hover to inspect value</span>
+                    </div>
+
+                    <div id="vizInteractiveContainer" class="hidden flex flex-col items-center p-4 bg-white rounded-xl border border-slate-100 shadow-inner w-full">
+                        <div class="flex justify-between w-full mb-4 px-4 items-center">
+                            <button onclick="intPrevFilter()" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-sm"><i class="ph ph-caret-left"></i> Prev Filter</button>
+                            <div class="text-center">
+                                <span id="intFilterLabel" class="font-bold text-slate-700 block">Filter 0</span>
+                                <span id="intShapeLabel" class="text-xs text-slate-500">Shape: 28x28</span>
+                            </div>
+                            <button onclick="intNextFilter()" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-sm">Next Filter <i class="ph ph-caret-right"></i></button>
+                        </div>
+
+                        <div id="intCanvasWrapper" class="relative inline-block border-2 border-slate-200 bg-slate-50 cursor-crosshair shadow-md group" style="width: 336px; height: 336px">
+                            <canvas id="intCanvas" width="28" height="28" class="w-full h-full rendering-pixelated"></canvas>
+                            <div id="intHighlight" class="absolute border border-red-500 bg-red-500/20 pointer-events-none hidden z-10 transition-all duration-75"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4"><i class="ph ph-info"></i> Hover over pixels to inspect receptive field mappings</p>
+                    </div>
+
+                    <div id="vizNodesGrid" class="flex flex-wrap gap-1 max-h-64 overflow-y-auto w-full p-2 bg-white rounded-xl border border-slate-100 shadow-inner">
+                        <!-- Nodes -->
+                    </div>
+                </div>
+            </div>
+        </main>
 
         <footer class="py-6 text-center text-xs text-slate-400">
             <p>Uses TensorFlow.js and a locally-trained Keras model</p>
         </footer>
 
         <script src="app.js"></script>
-    
-<!-- Global Tooltip for Viz -->
-<div id="globalTooltip" class="fixed z-[9999] pointer-events-none bg-slate-800 text-white text-xs px-3 py-2 rounded shadow-xl hidden whitespace-nowrap transform -translate-x-1/2 -translate-y-full mt-[-8px]"></div>
 
-</body>
+        <!-- Global Tooltip for Viz -->
+        <div id="globalTooltip" class="fixed z-[9999] pointer-events-none bg-slate-800 text-white text-xs px-3 py-2 rounded shadow-xl hidden whitespace-nowrap transform -translate-x-1/2 -translate-y-full mt-[-8px]"></div>
+    </body>
 </html>
