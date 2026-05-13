@@ -43,12 +43,12 @@ window.onload = async () => {
         const statusEl = document.getElementById('modelStatus');
         tfModel = await tf.loadGraphModel('./model/model.json');
         statusEl.innerHTML = '<i class="ph ph-check-circle"></i> Ready';        
-        statusEl.className = 'flex items-center gap-2 text-sm font-medium px-3 py-1 bg-green-50 text-green-700 rounded-full border border-green-200';
+        statusEl.className = 'flex items-center gap-2 text-sm font-medium px-4 py-2 neu-morph-inner text-green-700';
     } catch (e) {
         console.error("Error loading model", e);
         const statusEl = document.getElementById('modelStatus');
         statusEl.innerHTML = '<i class="ph ph-warning-circle"></i> Error';      
-        statusEl.className = 'flex items-center gap-2 text-sm font-medium px-3 py-1 bg-red-50 text-red-700 rounded-full border border-red-200';
+        statusEl.className = 'flex items-center gap-2 text-sm font-medium px-4 py-2 neu-morph-inner text-red-600';
     }
 };
 
@@ -145,7 +145,7 @@ function initGrid() {
     for (let i = 0; i < 10; i++) {
         const wrap = document.createElement('div');
         wrap.id = 'digitWrap-' + i;
-        wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden transition-all duration-300';
+        wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] neu-morph-inner rounded-2xl overflow-hidden transition-all duration-300 filter-transition';
         
         const fill = document.createElement('div');
         fill.id = 'digitFill-' + i;
@@ -192,7 +192,7 @@ function resetGrid() {
         const wrap = document.getElementById('digitWrap-' + i);
         const label = document.getElementById('digitLabel-' + i);
         
-        if(wrap) wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden transition-all duration-300';
+        if(wrap) wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] neu-morph-inner rounded-2xl overflow-hidden transition-all duration-300 filter-transition';
         if(label) label.className = 'text-3xl font-bold text-slate-400 transition-colors duration-300';
     }
 }
@@ -244,17 +244,17 @@ async function predictDigit() {
         txt.innerText = pctRound + '%';
         
         // Base active styling (non-top prediction)
-        wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] rounded-2xl border border-slate-200 bg-white overflow-hidden transition-all duration-300 shadow-sm';
+        wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] rounded-2xl neu-morph-inner overflow-hidden transition-all duration-300 filter-transition hover:-translate-y-1';
         fill.className = 'absolute bottom-0 left-0 right-0 w-full bg-indigo-100 transition-all duration-300 ease-out z-0';
         label.className = 'text-3xl font-bold text-slate-700 transition-colors duration-300';
-        txt.className = 'text-[11px] font-bold text-slate-500 mt-1 transition-colors duration-300 z-10 bg-white/50 px-1 rounded-md backdrop-blur-sm';
+        txt.className = 'text-[11px] font-bold text-slate-500 mt-1 transition-colors duration-300 z-10 px-2 py-0.5 rounded-md neu-morph-inner shadow-neu-inner backdrop-blur-sm';
         
         if (idx === maxIdx && val > 0.05) {
             // Highlight top prediction beautifully
-            wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] rounded-2xl border-2 border-indigo-500 bg-indigo-50 overflow-hidden transition-all duration-300 shadow-md ring-2 ring-indigo-100 ring-offset-2 transform scale-105 z-10';
+            wrap.className = 'relative flex flex-col items-center justify-center aspect-[4/5] rounded-2xl bg-neu-bg overflow-hidden transition-all duration-500 shadow-neu-outer transform scale-105 z-10 filter-transition ring-1 ring-indigo-200';
             fill.className = 'absolute bottom-0 left-0 right-0 w-full bg-indigo-500 transition-all duration-300 ease-out z-0';
             label.className = 'text-4xl font-bold text-white transition-colors duration-300 drop-shadow-md pb-1';
-            txt.className = 'text-[11px] font-bold text-indigo-700 mt-0 transition-colors duration-300 z-10 bg-white px-2 py-0.5 rounded-md shadow-sm';
+            txt.className = 'text-[11px] font-bold text-indigo-700 mt-0 transition-colors duration-300 z-10 neu-morph-sm px-3 py-1 rounded-lg filter-transition';
         }
     });
 
@@ -348,7 +348,7 @@ function renderVizLayer() {
     const grid = document.getElementById('vizNodesGrid');
     grid.innerHTML = '';
     
-    document.getElementById('vizNodesGrid').className = 'flex flex-wrap gap-2 max-h-64 overflow-y-auto w-full p-4 bg-white rounded-xl border border-slate-100 shadow-inner';
+    document.getElementById('vizNodesGrid').className = 'flex flex-wrap gap-2.5 max-h-72 overflow-y-auto w-full py-2 px-1 relative z-10 transition-all duration-500 filter-transition custom-scrollbar';
 
     if (layerData.shape.length === 4) {
         // Conv2D output: [batch, height, width, channels]
@@ -358,7 +358,7 @@ function renderVizLayer() {
         
         for (let c = 0; c < channels; c++) {
             const div = document.createElement('div');
-            div.className = 'w-14 h-14 flex flex-col items-center justify-center border-2 border-slate-100 rounded relative cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all overflow-hidden bg-slate-50';
+            div.className = 'w-14 h-14 flex flex-col items-center justify-center neu-morph-sm rounded-xl relative cursor-pointer hover:shadow-neu-hover hover:-translate-y-1 active:shadow-neu-pressed transition-all overflow-hidden';
             
             const vCanvas = document.createElement('canvas');
             vCanvas.width = w;
@@ -397,29 +397,11 @@ function renderVizLayer() {
             ctx.putImageData(imgData, 0, 0);
             div.appendChild(vCanvas);
             
-            div.addEventListener('mouseenter', (e) => {
-                const tt = document.getElementById('globalTooltip');
-                const dataUrl = vCanvas.toDataURL();
-                tt.innerHTML = `<div class='font-bold mb-1 text-center'>Filter ${c}</div>
-                                <div class='flex justify-center mb-2'>
-                                    <img src="${dataUrl}" class="w-32 h-32 rendering-pixelated border border-slate-600 rounded" />
-                                </div>
-                                <div class='opacity-80 text-center'>Shape: ${w}x${h}</div>
-                                <div class='opacity-80 text-center'>Max Act: ${maxVal.toFixed(3)}</div>`;
-                tt.classList.remove('hidden');
-                
-                const rect = div.getBoundingClientRect();
-                tt.style.left = (rect.left + rect.width / 2) + 'px';
-                tt.style.top = (rect.top - 8) + 'px';
-            });
-            div.addEventListener('mouseleave', () => {
-                document.getElementById('globalTooltip').classList.add('hidden');
-            });
+            div.title = `Filter ${c}\nShape: ${w}x${h}\nMax Act: ${maxVal.toFixed(3)}`;
             
             div.addEventListener('click', () => {
                 currentIntFilter = c;
                 vizMode = 'interactive';
-                document.getElementById('globalTooltip').classList.add('hidden');
                 renderVizLayer();
             });
             
@@ -434,7 +416,7 @@ function renderVizLayer() {
 
         displayData.forEach((val, idx) => {
             const div = document.createElement('div');
-            div.className = 'w-10 h-10 flex flex-col items-center justify-center border border-indigo-100 rounded text-[10px] relative group cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors';
+            div.className = 'w-10 h-10 flex flex-col items-center justify-center neu-morph-sm rounded-lg text-[10px] relative group cursor-pointer hover:shadow-neu-hover hover:-translate-y-1 active:shadow-neu-pressed transition-all';
             const intensity = Math.min(1, Math.max(0, val));
             div.style.backgroundColor = `rgba(79, 70, 229, ${intensity * 0.4})`;
             const vText = document.createElement('span');
@@ -443,18 +425,7 @@ function renderVizLayer() {
             
             div.appendChild(vText);
             
-            div.addEventListener('mouseenter', (e) => {
-                const tt = document.getElementById('globalTooltip');
-                tt.innerHTML = `<div class='font-bold text-center'>Node ${idx}</div><hr class='border-slate-600 my-1'/><div class='text-center'>Value: ${val.toFixed(4)}</div>`;
-                tt.classList.remove('hidden');
-                
-                const rect = div.getBoundingClientRect();
-                tt.style.left = (rect.left + rect.width / 2) + 'px';
-                tt.style.top = (rect.top - 8) + 'px';
-            });
-            div.addEventListener('mouseleave', () => {
-                document.getElementById('globalTooltip').classList.add('hidden');
-            });
+            div.title = `Node ${idx}\nValue: ${val.toFixed(4)}`;
             
             grid.appendChild(div);
         });
@@ -608,37 +579,37 @@ function renderInteractiveCanvas() {
             const kv = randomVal(i);
             const isPos = kv > 0;
             const bg = isPos ? `rgba(79, 70, 229, ${kv})` : `rgba(239, 68, 68, ${Math.abs(kv)})`;
-            kernelHTML += `<div style="background-color: ${bg}" class="flex items-center justify-center text-[10px] text-white shadow-inner font-semibold">${kv.toFixed(1)}</div>`;
+            kernelHTML += `<div style="background-color: ${bg}" class="flex items-center justify-center text-[10px] text-white shadow-inner font-semibold rounded-[2px]">${kv.toFixed(1)}</div>`;
         }
 
-        const tt = document.getElementById('globalTooltip');
-        tt.innerHTML = `
-            <div class='font-bold text-center border-b border-slate-600 pb-2 mb-2'>Coord: [${gridX}, ${gridY}] &bull; Value: ${val.toFixed(4)}</div>
-            <div class="flex gap-4">
-                <div class="flex flex-col items-center">
-                    <div class="text-xs mb-1 font-medium text-slate-300">Target Receptive Field</div>
-                    <div class="relative w-28 h-28 border border-slate-600 shadow-md">
-                        <img src="${document.getElementById('drawingCanvas').toDataURL()}" class="w-full h-full rendering-pixelated" />
-                        <div class="absolute border border-red-500 bg-red-500/20 pointer-events-none" style="left: ${rfXPct}%; top: ${rfYPct}%; width: ${rfWPct}%; height: ${rfHPct}%;"></div>
-                    </div>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="text-xs mb-1 font-medium text-slate-300">3x3 Kernel Matrix</div>
-                    <div class="grid grid-cols-3 gap-0.5 bg-slate-600 border border-slate-600 p-0.5 w-28 h-28 shadow-md">
-                        ${kernelHTML}
-                    </div>
-                </div>
-            </div>`;
-        tt.classList.remove('hidden');
+        // Update the left reactive panel
+        const panel = document.getElementById('reactiveInfoPanel');
+        panel.classList.remove('opacity-0');
+        panel.classList.add('opacity-100');
         
-        // Position above the cursor to prevent interference
-        tt.style.left = (rect.left + x + 20) + 'px';
-        const ttHeight = tt.offsetHeight || 140; 
-        tt.style.top = (rect.top + y - ttHeight + 100) + 'px';
+        document.getElementById('hoverCoordVal').innerHTML = `Coord: [${gridX}, ${gridY}]<br/>Value: <span class="font-bold text-indigo-600">${val.toFixed(4)}</span>`;
+        
+        document.getElementById('rfTargetImg').src = document.getElementById('drawingCanvas').toDataURL();
+        const rfHl = document.getElementById('rfTargetHighlight');
+        rfHl.style.left = `${rfXPct}%`;
+        rfHl.style.top = `${rfYPct}%`;
+        rfHl.style.width = `${rfWPct}%`;
+        rfHl.style.height = `${rfHPct}%`;
+        rfHl.classList.remove('hidden');
+        
+        document.getElementById('kernelMatrixGrid').innerHTML = kernelHTML;
     };
     
     wrapper.onmouseleave = () => {
         document.getElementById('intHighlight').classList.add('hidden');
-        document.getElementById('globalTooltip').classList.add('hidden');
+        const panel = document.getElementById('reactiveInfoPanel');
+        if (panel) {
+            panel.classList.add('opacity-0');
+            panel.classList.remove('opacity-100');
+            document.getElementById('hoverCoordVal').innerHTML = `Hover image<br/>to inspect`;
+            document.getElementById('kernelMatrixGrid').innerHTML = '';
+            document.getElementById('rfTargetImg').src = '';
+            document.getElementById('rfTargetHighlight').classList.add('hidden');
+        }
     };
 }
