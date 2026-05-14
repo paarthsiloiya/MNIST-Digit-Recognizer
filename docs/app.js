@@ -1,4 +1,5 @@
 ﻿let tfModel;
+let actualKernels = null;
 let canvas, ctx;
 let isDrawing = false;
 let startX, startY;
@@ -42,6 +43,15 @@ window.onload = async () => {
     try {
         const statusEl = document.getElementById('modelStatus');
         tfModel = await tf.loadGraphModel('./model/model.json');
+        
+        try {
+            const resp = await fetch('./model/kernels.json');
+            actualKernels = await resp.json();
+            console.log('Successfully loaded extracted kernels', actualKernels);
+        } catch(err) {
+            console.warn('Failed to load model/kernels.json. Fallback to mock visuals.', err);
+        }
+
         statusEl.innerHTML = '<i class="ph ph-check-circle"></i> Ready';        
         statusEl.className = 'flex items-center gap-2 text-sm font-medium px-4 py-2 neu-morph-inner text-green-700';
     } catch (e) {
@@ -136,6 +146,13 @@ function clearCanvas() {
     document.getElementById('topConfidence').innerText = "--%";
     document.getElementById('predictionHelpText').innerText = "Draw digit to predict.";
     resetGrid();
+
+    // Hide visualizer to return to clean state when fully cleared
+    const vizContainer = document.getElementById('vizContainer');
+    if (vizContainer) {
+        vizContainer.classList.remove('flex');
+        vizContainer.classList.add('hidden', 'opacity-0', 'scale-95');
+    }
 }
 
 function initGrid() {
@@ -486,6 +503,9 @@ function renderInteractiveCanvas() {
     document.getElementById('intFilterLabel').innerText = 'Filter ' + currentIntFilter;
     document.getElementById('intShapeLabel').innerText = 'Shape: ' + w + 'x' + h;
     
+    // Ensure Receptive Field is never empty/broken before hovering immediately loads it
+    document.getElementById('rfTargetImg').src = document.getElementById('drawingCanvas').toDataURL();
+
     const vCanvas = document.getElementById('intCanvas');
     vCanvas.width = w;
     vCanvas.height = h;
@@ -520,6 +540,42 @@ function renderInteractiveCanvas() {
         }
     }
     ctx.putImageData(imgData, 0, 0);
+
+    // Use actual true kernels if available, else fallback to mock kernel
+    let kernelHTML = '';
+    if (actualKernels && actualKernels[currentVizLayer] && actualKernels[currentVizLayer][c]) {
+        const trueKernel = actualKernels[currentVizLayer][c]; // 3x3 array
+        // Flatten to 1D
+        const flatKernel = [];
+        for (let row of trueKernel) {
+            for (let v of row) {
+                flatKernel.push(v);
+            }
+        }
+        // Normalize slightly for color display (assuming weights are roughly around -1 to 1)
+        let maxAbs = Math.max(...flatKernel.map(Math.abs));
+        if (maxAbs === 0) maxAbs = 1;
+
+        for(let i=0; i<9; i++) {
+            const kv = flatKernel[i];
+            const isPos = kv > 0;
+            const alpha = Math.min(1.0, Math.abs(kv) / maxAbs + 0.1); 
+            const bg = isPos ? `rgba(79, 70, 229, ${alpha})` : `rgba(239, 68, 68, ${alpha})`;
+            kernelHTML += `<div style="background-color: ${bg}" class="flex items-center justify-center text-[10px] text-white shadow-inner font-semibold rounded-[2px]" title="Exact Weight: ${kv.toFixed(4)}">${kv.toFixed(2)}</div>`;
+        }
+    } else {
+        // Generate synthetic mock kernel for visual representation (fallback)
+        // Static seed since it's now per-filter instead of per-pixel
+        const seed = c * 11 + currentVizLayer * 73;
+        const randomVal = (i) => (((seed * (i + 1) * 17) % 200) / 100) - 1.0;
+        for(let i=0; i<9; i++) {
+            const kv = randomVal(i);
+            const isPos = kv > 0;
+            const bg = isPos ? `rgba(79, 70, 229, ${kv})` : `rgba(239, 68, 68, ${Math.abs(kv)})`;
+            kernelHTML += `<div style="background-color: ${bg}" class="flex items-center justify-center text-[10px] text-white shadow-inner font-semibold rounded-[2px]">${kv.toFixed(1)}</div>`;
+        }
+    }
+    document.getElementById('kernelMatrixGrid').innerHTML = kernelHTML;
     
     // Setup hover
     const wrapper = document.getElementById('intCanvasWrapper');
@@ -571,23 +627,12 @@ function renderInteractiveCanvas() {
         const rfWPct = (drawW / 28) * 100;
         const rfHPct = (drawH / 28) * 100;
 
-        // Generate synthetic mock kernel for visual representation
-        const seed = gridX * 73 + gridY * 31 + c * 11;
-        const randomVal = (i) => (((seed * (i + 1) * 17) % 200) / 100) - 1.0;
-        let kernelHTML = '';
-        for(let i=0; i<9; i++) {
-            const kv = randomVal(i);
-            const isPos = kv > 0;
-            const bg = isPos ? `rgba(79, 70, 229, ${kv})` : `rgba(239, 68, 68, ${Math.abs(kv)})`;
-            kernelHTML += `<div style="background-color: ${bg}" class="flex items-center justify-center text-[10px] text-white shadow-inner font-semibold rounded-[2px]">${kv.toFixed(1)}</div>`;
-        }
-
-        // Update the left reactive panel
         const panel = document.getElementById('reactiveInfoPanel');
-        panel.classList.remove('opacity-0');
-        panel.classList.add('opacity-100');
         
-        document.getElementById('hoverCoordVal').innerHTML = `Coord: [${gridX}, ${gridY}]<br/>Value: <span class="font-bold text-indigo-600">${val.toFixed(4)}</span>`;
+        document.getElementById('hoverCoordVal').innerHTML = `
+            <div class="bg-slate-50 px-3 py-1.5 rounded-md flex-1 text-center border border-slate-200">Coord: [${gridX}, ${gridY}]</div>
+            <div class="bg-indigo-50 px-3 py-1.5 rounded-md flex-1 text-center border border-indigo-100 text-indigo-700">Value: <span class="font-bold">${val.toFixed(4)}</span></div>
+        `;
         
         document.getElementById('rfTargetImg').src = document.getElementById('drawingCanvas').toDataURL();
         const rfHl = document.getElementById('rfTargetHighlight');
@@ -596,20 +641,12 @@ function renderInteractiveCanvas() {
         rfHl.style.width = `${rfWPct}%`;
         rfHl.style.height = `${rfHPct}%`;
         rfHl.classList.remove('hidden');
-        
-        document.getElementById('kernelMatrixGrid').innerHTML = kernelHTML;
     };
     
     wrapper.onmouseleave = () => {
         document.getElementById('intHighlight').classList.add('hidden');
-        const panel = document.getElementById('reactiveInfoPanel');
-        if (panel) {
-            panel.classList.add('opacity-0');
-            panel.classList.remove('opacity-100');
-            document.getElementById('hoverCoordVal').innerHTML = `Hover image<br/>to inspect`;
-            document.getElementById('kernelMatrixGrid').innerHTML = '';
-            document.getElementById('rfTargetImg').src = '';
-            document.getElementById('rfTargetHighlight').classList.add('hidden');
-        }
+        document.getElementById('hoverCoordVal').innerHTML = `<div class="text-slate-400 text-xs text-center w-full">Hover image to inspect</div>`;
+        // Do not clear the rfTargetImg entirely so it doesn't abruptly disappear
+        document.getElementById('rfTargetHighlight').classList.add('hidden');
     };
 }
