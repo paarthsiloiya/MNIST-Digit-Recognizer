@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -13,19 +13,26 @@
                 theme: {
                     extend: {
                         colors: {
-                            neu: {
-                                bg: "#e2e8f0", // Based on slate-200
-                                light: "#ffffff",
-                                dark: "#a0aec0",
+                            brand: {
+                                50: '#eff6ff',
+                                100: '#e0e7ff',
+                                200: '#bfdbfe',
+                                300: '#93c5fd',
+                                400: '#60a5fa',
+                                500: '#3b82f6',
+                                600: '#2563eb',
+                                700: '#1d4ed8',
                             },
                         },
                         boxShadow: {
-                            "neu-outer": "9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)",
-                            "neu-outer-sm": "5px 5px 10px rgb(163,177,198,0.6), -5px -5px 10px rgba(255,255,255, 0.5)",
-                            "neu-inner": "inset 6px 6px 10px 0 rgba(163, 177, 198, 0.6), inset -6px -6px 10px 0 rgba(255, 255, 255, 0.5)",
-                            "neu-pressed": "inset 4px 4px 8px rgb(163,177,198,0.6), inset -4px -4px 8px rgba(255,255,255, 0.5)",
-                            "neu-hover": "12px 12px 20px rgb(163,177,198,0.6), -12px -12px 20px rgba(255,255,255, 0.5)",
+                            'surface': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                            'surface-sm': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                            'surface-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+                            'surface-inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.04)',
                         },
+                        transitionProperty: {
+                            'micro': 'transform, opacity, color, background-color, box-shadow',
+                        }
                     },
                 },
             };
@@ -37,33 +44,33 @@
                     image-rendering: -moz-crisp-edges;
                     image-rendering: crisp-edges;
                 }
-                .neu-morph {
-                    @apply bg-neu-bg shadow-neu-outer rounded-3xl transition-all duration-300;
+                .surface-card {
+                    @apply bg-white shadow-surface rounded-2xl border border-slate-200 transition-micro duration-300;
                 }
-                .neu-morph-sm {
-                    @apply bg-neu-bg shadow-neu-outer-sm rounded-xl transition-all duration-300;
+                .surface-card-sm {
+                    @apply bg-white shadow-surface-sm rounded-xl border border-slate-200 transition-micro duration-300;
                 }
-                .neu-morph-inner {
-                    @apply bg-neu-bg border border-white/40 shadow-neu-inner rounded-3xl;
+                .surface-panel {
+                    @apply bg-slate-50 border border-slate-200 shadow-surface-inner rounded-xl;
                 }
-                .neu-button {
-                    @apply bg-neu-bg shadow-neu-outer rounded-xl border border-transparent transition-all duration-300 hover:shadow-neu-hover hover:-translate-y-0.5 active:shadow-neu-pressed active:translate-y-0;
+                .surface-button {
+                    @apply bg-white shadow-surface-sm rounded-xl border border-slate-200 transition-micro duration-200 hover:shadow-surface hover:border-slate-300 hover:scale-[1.02] active:scale-95 active:shadow-surface-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
                 }
             }
         </style>
     </head>
-    <body class="bg-neu-bg text-slate-700 antialiased min-h-screen flex flex-col font-sans selection:bg-indigo-200">
+    <body class="bg-slate-50 text-slate-700 antialiased min-h-screen flex flex-col font-sans selection:bg-brand-200">
         <!-- Header -->
-        <header class="py-4 px-6 mb-8 bg-neu-bg shadow-neu-outer-sm flex items-center justify-between rounded-b-3xl sticky top-0 z-50">
+        <header class="py-4 px-6 mb-8 bg-slate-50 shadow-surface-sm flex items-center justify-between rounded-b-3xl sticky top-0 z-50">
             <div class="flex items-center gap-3 w-full max-w-5xl mx-auto">
-                <i class="ph ph-brain text-4xl text-indigo-600"></i>
+                <i class="ph ph-brain text-4xl text-brand-600"></i>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-slate-900">Digit Recognizer</h1>
                     <p class="text-xs text-slate-500 font-medium">Draw a digit (0-9) to see predictions</p>
                 </div>
                 <div class="ml-auto flex items-center gap-4">
-                    <span id="modelStatus" class="flex items-center gap-2 text-sm font-medium px-4 py-2 neu-morph-inner text-indigo-700"> <i class="ph ph-spinner animate-spin"></i> Loading Model... </span>
-                    <a href="https://github.com/paarthsiloiya/MNIST-Digit-Recognizer" class="neu-button p-2 text-slate-500 hover:text-indigo-600" aria-label="GitHub Repository" title="GitHub Repository">
+                    <span id="modelStatus" class="flex items-center gap-2 text-sm font-medium px-4 py-2 surface-panel text-brand-700"> <i class="ph ph-spinner animate-spin"></i> Loading Model... </span>
+                    <a href="https://github.com/paarthsiloiya/MNIST-Digit-Recognizer" class="surface-button p-2 text-slate-500 hover:text-brand-600" aria-label="GitHub Repository" title="GitHub Repository">
                         <i class="ph ph-github-logo text-2xl"></i>
                     </a>
                 </div>
@@ -73,42 +80,42 @@
         <main class="flex-grow flex flex-col items-center justify-start px-4 w-full pb-10">
             <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
                 <!-- Left panel: Canvas -->
-                <div class="neu-morph p-8 flex flex-col items-center group relative overflow-hidden h-full">
-                    <div class="absolute inset-0 bg-indigo-500/5 mix-blend-overlay pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 liquid-shape"></div>
+                <div class="surface-card p-8 flex flex-col items-center group relative overflow-hidden h-full">
+                    <div class="absolute inset-0 bg-brand-500/5 mix-blend-overlay pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 liquid-shape"></div>
                     <div class="w-full flex justify-between items-end mb-6 relative z-10">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-pencil-simple text-indigo-500"></i> Canvas</h2>
+                            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-pencil-simple text-brand-500"></i> Canvas</h2>
                             <ul class="text-sm text-slate-500 mt-2 list-none space-y-1">
-                                <li class="flex items-center gap-2 hover:translate-x-1 transition-transform cursor-default"><i class="ph ph-mouse-left text-lg text-indigo-400"></i> Left-click to draw</li>
-                                <li class="flex items-center gap-2 hover:translate-x-1 transition-transform cursor-default"><i class="ph ph-mouse-right text-lg text-indigo-400"></i> Right-click to erase</li>
+                                <li class="flex items-center gap-2  transition-transform cursor-default"><i class="ph ph-mouse-left text-lg text-brand-400"></i> Left-click to draw</li>
+                                <li class="flex items-center gap-2  transition-transform cursor-default"><i class="ph ph-mouse-right text-lg text-brand-400"></i> Right-click to erase</li>
                             </ul>
                         </div>
-                        <button id="clearBtn" class="flex gap-2 items-center text-sm px-5 py-2.5 neu-button text-slate-600 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-300" aria-label="Clear canvas" title="Clear canvas (Hotkey: C)">
+                        <button id="clearBtn" class="flex gap-2 items-center text-sm px-5 py-2.5 surface-button text-slate-600 font-bold focus:outline-none focus:ring-2 focus:ring-brand-300" aria-label="Clear canvas" title="Clear canvas (Hotkey: C)">
                             <i class="ph ph-trash text-lg text-red-400 group-hover:text-red-500"></i> Clear
                         </button>
                     </div>
 
                     <div
                         id="canvasWrapper"
-                        class="relative touch-none mx-auto w-full max-w-[420px] aspect-square rounded-[3rem] overflow-hidden shadow-neu-inner bg-neu-bg mt-2 group-hover:shadow-[inset_12px_12px_24px_rgba(163,177,198,0.7),_inset_-12px_-12px_24px_rgba(255,255,255,0.6)] transition-all duration-500"
+                        class="relative touch-none mx-auto w-full max-w-[420px] aspect-square rounded-[1rem] overflow-hidden shadow-surface-inner bg-slate-50 mt-2 group-hover:shadow-surface-inner transition-all duration-500"
                     >
                         <!-- The brush cursor overlay -->
-                        <div id="brushCursor" class="absolute pointer-events-none hidden bg-indigo-500 rounded-full z-10 opacity-70 border-2 border-white shadow-sm" style="width: 30px; height: 30px; transform: translate(-50%, -50%)"></div>
+                        <div id="brushCursor" class="absolute pointer-events-none hidden bg-brand-500 rounded-full z-10 opacity-70 border-2 border-white shadow-sm" style="width: 30px; height: 30px; transform: translate(-50%, -50%)"></div>
 
                         <canvas id="drawingCanvas" width="28" height="28" class="block bg-transparent cursor-none rendering-pixelated w-full h-full" style="touch-action: none" oncontextmenu="return false;"> </canvas>
                     </div>
                 </div>
 
                 <!-- Right panel: Predictions -->
-                <div class="neu-morph p-8 flex flex-col relative h-full">
+                <div class="surface-card p-8 flex flex-col relative h-full">
                     <div class="w-full mb-6 relative z-10">
-                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 pb-4"><i class="ph ph-target text-indigo-500"></i> Top Prediction</h2>
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 pb-4"><i class="ph ph-target text-brand-500"></i> Top Prediction</h2>
                     </div>
 
                     <div class="flex items-center gap-8 mb-8 relative z-10">
-                        <div class="w-32 h-32 bg-neu-bg rounded-full neu-morph-inner flex items-center justify-center relative overflow-hidden group shadow-neu-inner">
-                            <div class="absolute inset-0 bg-indigo-200/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 liquid-shape scale-110"></div>
-                            <span id="predictionResult" class="text-7xl font-light text-indigo-600 drop-shadow-sm z-10 transition-transform duration-300 group-hover:scale-110">-</span>
+                        <div class="w-32 h-32 bg-slate-50 rounded-full surface-panel flex items-center justify-center relative overflow-hidden group shadow-surface-inner">
+                            <div class="absolute inset-0 bg-brand-200/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 liquid-shape scale-110"></div>
+                            <span id="predictionResult" class="text-7xl font-light text-brand-600 drop-shadow-sm z-10 transition-transform duration-300 group-hover:scale-110">-</span>
                         </div>
                         <div class="flex-1 filter-transition">
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Confidence</p>
@@ -127,16 +134,16 @@
             </div>
 
             <!-- Interactive Visualization Panel -->
-            <div id="vizContainer" class="hidden mt-10 p-8 flex-col w-full max-w-6xl mx-auto filter-transition snap-pop scale-95 opacity-0 neu-morph">
+            <div id="vizContainer" class="hidden mt-10 p-8 flex-col w-full max-w-6xl mx-auto filter-transition snap-pop scale-95 opacity-0 surface-card">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-magnifying-glass text-indigo-500"></i> Code/Node Visualizer</h2>
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-magnifying-glass text-brand-500"></i> Code/Node Visualizer</h2>
                         <p class="text-sm text-slate-500 mt-1">Step through the prediction layers to see how the model computes the final output</p>
                     </div>
                     <div class="flex items-center gap-4">
-                        <button id="vizModeToggle" onclick="toggleVizMode()" class="px-4 py-2 text-slate-600 text-sm flex items-center gap-2 neu-button"><i class="ph ph-swap text-indigo-500"></i> Toggle Interactive</button>
-                        <button id="vizBtnPrev" onclick="vizPrev()" class="px-4 py-2 text-slate-600 disabled:opacity-40 flex items-center gap-2 neu-button"><i class="ph ph-caret-left"></i> Prev</button>
-                        <button id="vizBtnNext" onclick="vizNext()" class="px-4 py-2 text-indigo-600 font-medium disabled:opacity-40 flex items-center gap-2 neu-button">Next <i class="ph ph-caret-right"></i></button>
+                        <button id="vizModeToggle" onclick="toggleVizMode()" class="px-4 py-2 text-slate-600 text-sm flex items-center gap-2 surface-button"><i class="ph ph-swap text-brand-500"></i> Toggle Interactive</button>
+                        <button id="vizBtnPrev" onclick="vizPrev()" class="px-4 py-2 text-slate-600 disabled:opacity-40 flex items-center gap-2 surface-button"><i class="ph ph-caret-left"></i> Prev</button>
+                        <button id="vizBtnNext" onclick="vizNext()" class="px-4 py-2 text-brand-600 font-medium disabled:opacity-40 flex items-center gap-2 surface-button">Next <i class="ph ph-caret-right"></i></button>
                     </div>
                 </div>
 
@@ -144,7 +151,7 @@
                 <div class="pt-6 border-t border-slate-300/50 relative flex flex-col">
                     <div class="flex items-end justify-between mb-6">
                         <div>
-                            <h3 id="vizLayerName" class="text-2xl font-bold text-indigo-600 tracking-tight">Layer Name</h3>
+                            <h3 id="vizLayerName" class="text-2xl font-bold text-brand-600 tracking-tight">Layer Name</h3>
                             <p id="vizLayerDesc" class="text-sm text-slate-500 mt-1">Layer Description</p>
                         </div>
                         <div class="text-right">
@@ -154,19 +161,19 @@
 
                     <div id="vizInteractiveContainer" class="hidden flex-col items-center w-full relative z-10 filter-transition snap-pop scale-95 opacity-0">
                         <div class="flex justify-center gap-8 w-full mb-6 px-4 items-center">
-                            <button onclick="intPrevFilter()" class="p-2 text-slate-500 hover:text-indigo-600 transition-colors bg-transparent border-0 neu-button rounded-full w-10 h-10 flex items-center justify-center"><i class="ph ph-caret-left text-2xl"></i></button>
+                            <button onclick="intPrevFilter()" class="p-2 text-slate-500 hover:text-brand-600 transition-colors bg-transparent border-0 surface-button rounded-full w-10 h-10 flex items-center justify-center"><i class="ph ph-caret-left text-2xl"></i></button>
                             <div class="text-center w-32">
                                 <span id="intFilterLabel" class="font-bold text-slate-800 block text-lg font-mono tracking-tight">Filter 0</span>
                                 <span id="intShapeLabel" class="text-xs text-slate-400 uppercase tracking-widest mt-0.5 block">Shape: 28x28</span>
                             </div>
-                            <button onclick="intNextFilter()" class="p-2 text-slate-500 hover:text-indigo-600 transition-colors bg-transparent border-0 neu-button rounded-full w-10 h-10 flex items-center justify-center"><i class="ph ph-caret-right text-2xl"></i></button>
+                            <button onclick="intNextFilter()" class="p-2 text-slate-500 hover:text-brand-600 transition-colors bg-transparent border-0 surface-button rounded-full w-10 h-10 flex items-center justify-center"><i class="ph ph-caret-right text-2xl"></i></button>
                         </div>
 
                         <div class="flex flex-col md:flex-row items-center md:items-start justify-center w-full gap-8 mt-2">
                             <!-- Left panel for Reactive Info -->
                             <div id="reactiveInfoPanel" class="w-full lg:w-[480px] bg-white/60 p-6 rounded-2xl ring-1 ring-slate-200/60 shadow-sm filter-transition flex flex-col justify-start transition-all duration-300 order-2 md:order-1 pt-6">
                                 <div class="mb-6 w-full px-2">
-                                    <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-2 text-center">Pixel Data</div>
+                                    <div class="text-[10px] font-bold text-brand-500 uppercase tracking-widest mb-2 text-center">Pixel Data</div>
                                     <div id="hoverCoordVal" class="text-sm font-medium text-slate-700 font-mono bg-white py-3 px-4 rounded-xl ring-1 ring-slate-200/50 shadow-inner flex flex-col sm:flex-row items-center justify-between min-h-[60px] gap-2">
                                         <div class="text-slate-400 text-xs text-center w-full">Hover image to inspect</div>
                                     </div>
@@ -195,10 +202,10 @@
                                 <div id="intCanvasWrapper" class="relative inline-block cursor-crosshair group p-1.5 rounded-[1.25rem] bg-white/40 ring-1 ring-slate-200/60 shadow-sm" style="width: 352px; height: 352px">
                                     <div class="relative w-full h-full rounded-xl overflow-hidden">
                                         <canvas id="intCanvas" width="28" height="28" class="w-full h-full rendering-pixelated block bg-transparent"></canvas>
-                                        <div id="intHighlight" class="absolute border-2 border-indigo-400 bg-indigo-400/20 shadow-[0_0_8px_rgba(99,102,241,0.4)] pointer-events-none hidden z-10 transition-all duration-75 box-border"></div>
+                                        <div id="intHighlight" class="absolute border-2 border-brand-400 bg-brand-400/20 shadow-[0_0_8px_rgba(99,102,241,0.4)] pointer-events-none hidden z-10 transition-all duration-75 box-border"></div>
                                     </div>
                                 </div>
-                                <p class="text-xs text-slate-400 mt-6 flex items-center gap-1.5"><i class="ph ph-info text-indigo-400"></i> Responsive pixel mapping enabled</p>
+                                <p class="text-xs text-slate-400 mt-6 flex items-center gap-1.5"><i class="ph ph-info text-brand-400"></i> Responsive pixel mapping enabled</p>
                             </div>
 
                             <!-- Spacing balance on wide screens -->

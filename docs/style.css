@@ -1,8 +1,8 @@
-﻿html,
+html,
 body {
     margin: 0;
     padding: 0;
-    background-color: #e2e8f0;
+    background-color: #f8fafc;
     /* Standard base for good neumorphism contrast */
 }
 
@@ -15,15 +15,15 @@ body {
 /* Organic Morphing Animation */
 @keyframes liquidMorph {
     0% {
-        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        
     }
 
     50% {
-        border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+        
     }
 
     100% {
-        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        
     }
 }
 
