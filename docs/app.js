@@ -431,21 +431,113 @@ function renderVizLayer() {
         
         document.getElementById('vizHeaderInfo').innerText = `Nodes showing: ${displayData.length} (of ${totalNodes})`;
 
-        displayData.forEach((val, idx) => {
-            const div = document.createElement('div');
-            div.className = 'w-10 h-10 flex flex-col items-center justify-center neu-morph-sm rounded-lg text-[10px] relative group cursor-pointer hover:shadow-neu-hover hover:-translate-y-1 active:shadow-neu-pressed transition-all';
-            const intensity = Math.min(1, Math.max(0, val));
-            div.style.backgroundColor = `rgba(79, 70, 229, ${intensity * 0.4})`;
-            const vText = document.createElement('span');
-            vText.innerText = val.toFixed(2);
-            vText.className = 'select-none pointer-events-none truncate w-full text-center px-1 font-semibold text-slate-700';
+        if (totalNodes === 10) {
+            // Output Layer specific interactive visualization
+            grid.className = 'w-full py-4 relative z-10 transition-all duration-500 filter-transition custom-scrollbar mt-4';
             
-            div.appendChild(vText);
+            const container = document.createElement('div');
+            container.className = 'flex flex-col md:flex-row w-full justify-between items-center gap-8 px-4 h-full';
             
-            div.title = `Node ${idx}\nValue: ${val.toFixed(4)}`;
+            // Left side: Vertical list
+            const leftCol = document.createElement('div');
+            leftCol.className = 'flex flex-col gap-2 w-full md:w-1/2';
             
-            grid.appendChild(div);
-        });
+            layerData.data.forEach((val, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-3 w-full';
+                
+                const label = document.createElement('span');
+                label.className = 'text-lg font-bold text-slate-700 w-6 text-right';
+                label.innerText = idx;
+                
+                const barTrack = document.createElement('div');
+                barTrack.className = 'h-6 flex-1 bg-slate-100 rounded-md overflow-hidden flex';
+                
+                const barFill = document.createElement('div');
+                const intensity = Math.max(0, Math.min(1, val));
+                barFill.className = 'h-full transition-all duration-300';
+                barFill.style.width = `${intensity * 100}%`;
+                barFill.style.backgroundColor = `rgba(79, 70, 229, ${intensity * 0.8 + 0.2})`;
+                
+                barTrack.appendChild(barFill);
+                
+                const valText = document.createElement('span');
+                valText.className = 'text-xs font-mono text-slate-500 w-12 text-right';
+                valText.innerText = val.toFixed(3);
+                
+                row.appendChild(label);
+                row.appendChild(barTrack);
+                row.appendChild(valText);
+                
+                leftCol.appendChild(row);
+            });
+            
+            // Right side: Doughnut chart
+            const rightCol = document.createElement('div');
+            rightCol.className = 'flex justify-center items-center w-full md:w-1/2 h-48 md:h-64';
+            
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.className = 'max-h-full max-w-full';
+            rightCol.appendChild(chartCanvas);
+            
+            container.appendChild(leftCol);
+            container.appendChild(rightCol);
+            grid.appendChild(container);
+            
+            // Render Chart.js
+            const ctx = chartCanvas.getContext('2d');
+            const dataColors = Array.from({length: 10}, (_, i) => {
+                const intensity = Math.max(0, Math.min(1, layerData.data[i]));
+                return `rgba(79, 70, 229, ${intensity * 0.8 + 0.2})`;
+            });
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['0','1','2','3','4','5','6','7','8','9'],
+                    datasets: [{
+                        data: layerData.data,
+                        backgroundColor: dataColors,
+                        borderWidth: 1,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Digit ${context.label}: ${context.raw.toFixed(3)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+        } else {
+            // Normal Grid for Hidden Dense Layers
+            displayData.forEach((val, idx) => {
+                const div = document.createElement('div');
+                div.className = 'w-10 h-10 flex flex-col items-center justify-center neu-morph-sm rounded-lg text-[10px] relative group cursor-pointer hover:shadow-neu-hover hover:-translate-y-1 active:shadow-neu-pressed transition-all';
+                const intensity = Math.min(1, Math.max(0, val));
+                div.style.backgroundColor = `rgba(79, 70, 229, ${intensity * 0.4})`;
+                const vText = document.createElement('span');
+                vText.innerText = val.toFixed(2);
+                vText.className = 'select-none pointer-events-none truncate w-full text-center px-1 font-semibold text-slate-700';
+                
+                div.appendChild(vText);
+                
+                div.title = `Node ${idx}\nValue: ${val.toFixed(4)}`;
+                
+                grid.appendChild(div);
+            });
+        }
     }
 
 }

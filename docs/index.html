@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -8,31 +8,32 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/@phosphor-icons/web"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             tailwind.config = {
                 theme: {
                     extend: {
                         colors: {
                             brand: {
-                                50: '#eff6ff',
-                                100: '#e0e7ff',
-                                200: '#bfdbfe',
-                                300: '#93c5fd',
-                                400: '#60a5fa',
-                                500: '#3b82f6',
-                                600: '#2563eb',
-                                700: '#1d4ed8',
+                                50: "#eff6ff",
+                                100: "#e0e7ff",
+                                200: "#bfdbfe",
+                                300: "#93c5fd",
+                                400: "#60a5fa",
+                                500: "#3b82f6",
+                                600: "#2563eb",
+                                700: "#1d4ed8",
                             },
                         },
                         boxShadow: {
-                            'surface': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                            'surface-sm': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-                            'surface-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
-                            'surface-inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.04)',
+                            surface: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+                            "surface-sm": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                            "surface-hover": "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)",
+                            "surface-inner": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.04)",
                         },
                         transitionProperty: {
-                            'micro': 'transform, opacity, color, background-color, box-shadow',
-                        }
+                            micro: "transform, opacity, color, background-color, box-shadow",
+                        },
                     },
                 },
             };
@@ -86,8 +87,8 @@
                         <div>
                             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-pencil-simple text-brand-500"></i> Canvas</h2>
                             <ul class="text-sm text-slate-500 mt-2 list-none space-y-1">
-                                <li class="flex items-center gap-2  transition-transform cursor-default"><i class="ph ph-mouse-left text-lg text-brand-400"></i> Left-click to draw</li>
-                                <li class="flex items-center gap-2  transition-transform cursor-default"><i class="ph ph-mouse-right text-lg text-brand-400"></i> Right-click to erase</li>
+                                <li class="flex items-center gap-2 transition-transform cursor-default"><i class="ph ph-mouse-left text-lg text-brand-400"></i> Left-click to draw</li>
+                                <li class="flex items-center gap-2 transition-transform cursor-default"><i class="ph ph-mouse-right text-lg text-brand-400"></i> Right-click to erase</li>
                             </ul>
                         </div>
                         <button id="clearBtn" class="flex gap-2 items-center text-sm px-5 py-2.5 surface-button text-slate-600 font-bold focus:outline-none focus:ring-2 focus:ring-brand-300" aria-label="Clear canvas" title="Clear canvas (Hotkey: C)">
@@ -95,10 +96,7 @@
                         </button>
                     </div>
 
-                    <div
-                        id="canvasWrapper"
-                        class="relative touch-none mx-auto w-full max-w-[420px] aspect-square rounded-[1rem] overflow-hidden shadow-surface-inner bg-slate-50 mt-2 group-hover:shadow-surface-inner transition-all duration-500"
-                    >
+                    <div id="canvasWrapper" class="relative touch-none mx-auto w-full max-w-[420px] aspect-square rounded-[1rem] overflow-hidden shadow-surface-inner bg-slate-50 mt-2 group-hover:shadow-surface-inner transition-all duration-500">
                         <!-- The brush cursor overlay -->
                         <div id="brushCursor" class="absolute pointer-events-none hidden bg-brand-500 rounded-full z-10 opacity-70 border-2 border-white shadow-sm" style="width: 30px; height: 30px; transform: translate(-50%, -50%)"></div>
 
